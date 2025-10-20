@@ -3,7 +3,9 @@ import numpy as np
 import sys
 import plotly.graph_objects as go
 
-"""Creates a plot from TinyGP output format.
+
+def main():
+    """Creates a plot from TinyGP output format.
 
     run: python plot_tinygp_output.py <filename>
 
@@ -13,7 +15,6 @@ import plotly.graph_objects as go
 
     
 """
-def main():
     filename = sys.argv[1]
 
     with open(filename, "r") as f:
