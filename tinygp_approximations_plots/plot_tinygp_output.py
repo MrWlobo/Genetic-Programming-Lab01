@@ -16,7 +16,7 @@ def main():
         third row (optional): the original function
 
     
-"""
+    """
     filename = sys.argv[1]
 
     with open(filename, "r") as f:
@@ -29,8 +29,8 @@ def main():
                 if n_vars > 2:
                     raise ValueError("2 args max pls")
 
-                a = int(line.strip().split()[1])
-                b = int(line.strip().split()[2])
+                a = float(line.strip().split()[1])
+                b = float(line.strip().split()[2])
                 step = float(line.strip().split()[3])
             elif i == 1:
                 equation = line.strip()
@@ -57,6 +57,7 @@ def main():
                 plt.figure()
                 plt.grid()
                 plt.plot(X[0], Y)
+                plt.savefig("plot.png")
                 plt.show()
             else:
                 Y = eval(equation)
@@ -69,12 +70,14 @@ def main():
                 ax[1].plot(X[0], Y_original)
                 ax[1].set_title("Original")
                 ax[1].grid()
+                plt.savefig("plot.png")
                 plt.show()
         elif n_vars == 2:
             if original_equation is None:
                 X[0], X[1] = np.meshgrid(X[0], X[1])
 
                 Y = eval(equation)
+                # Y = np.clip(Y, -5, None)
 
                 fig = go.Figure(data=[go.Surface(z=Y, x=X[0], y=X[1])])
 
@@ -95,6 +98,7 @@ def main():
                 X[0], X[1] = np.meshgrid(X[0], X[1])
 
                 Y = eval(equation)
+                # Y = np.clip(Y, -300, None)
                 Y_original = eval(original_equation)
 
                 fig = make_subplots(
