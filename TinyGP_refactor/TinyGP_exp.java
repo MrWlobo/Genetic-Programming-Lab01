@@ -256,14 +256,14 @@ public class TinyGP {
     }
 
 
-    static List<Character> buffer = new ArrayList<>();
+    static List<Character> buffer = new ArrayList<>(MAX_LEN);
 
     List<Character> create_random_indiv( int depth ) {
         List<Character> ind;
         int len;
 
-        buffer.clear();
-        buffer.addAll(Collections.nCopies(MAX_LEN, ' '));
+//        buffer.clear();
+//        buffer.addAll(Collections.nCopies(MAX_LEN, ' '));
 
         len = grow( buffer, 0, MAX_LEN, depth );
 
@@ -445,6 +445,7 @@ public class TinyGP {
     public TinyGP( String fname, long s ) {
         fitness =  new ArrayList<>();
         seed = s;
+        buffer.addAll(Collections.nCopies(MAX_LEN, ' '));
 
         for (int i = 0; i < POPSIZE; i++){
             fitness.add(0.0);
