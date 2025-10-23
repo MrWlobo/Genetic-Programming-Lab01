@@ -14,8 +14,8 @@ public class TinyGP {
     List<Double> fitness;
     List<List<Character>> pop;
 
-    static Random rd = new Random();
-    static final int
+    Random rd = new Random();
+    final int
             ADD = 110,
             SUB = 111,
             MUL = 112,
@@ -24,25 +24,25 @@ public class TinyGP {
             FSET_START = ADD,
             FSET_END = EXP;
 
-    static List<Double> x = new ArrayList<>();
+    List<Double> x = new ArrayList<>();
 
-    static double minrandom, maxrandom;
-    static List<Character> program;
-    static int PC;
-    static int varnumber, fitnesscases, randomnumber;
-    static double fbestpop = 0.0, favgpop = 0.0;
-    static long seed;
-    static double avg_len;
-    static final int
+    double minrandom, maxrandom;
+    List<Character> program;
+    int PC;
+    int varnumber, fitnesscases, randomnumber;
+    double fbestpop = 0.0, favgpop = 0.0;
+    long seed;
+    double avg_len;
+    final int
             MAX_LEN = 10000,
             POPSIZE = 100000,
             DEPTH   = 5,
             GENERATIONS = 100,
             TSIZE = 2;
-    public static final double
+    public final double
             PMUT_PER_NODE  = 0.05,
             CROSSOVER_PROB = 0.9;
-    static List<List<Double>> targets;
+    List<List<Double>> targets;
 
     double run() { /* Interpreter */
         char primitive = program.get(PC++);
@@ -54,42 +54,27 @@ public class TinyGP {
             case MUL : return run() * run();
             case DIV : {
                 double num = run(), den = run();
-                if ( Math.abs( den ) <= 0.001 )
+                if ( Math.abs( den ) <= 0.001 ) {
                     return num;
-                else
+                }
+                else {
                     return num / den;
+                }
             }
             case EXP: return Math.exp(run());
         }
         return 0.0; // should never get here
     }
 
-    int traverse(List<Character> buffer, int index) {
-        if (index >= buffer.size()) {
-            return 0; // nie można iść dalej
-        }
+    int traverse( List<Character> buffer, int buffercount ) {
+        if ( buffer.get(buffercount) < FSET_START )
+            return ++buffercount;
 
-        char node = buffer.get(index);
-
-        // Jeśli zmienna lub stała, długość poddrzewa = 1
-        if (node < FSET_START)
-            return 1;
-
-        switch(node) {
-            case ADD:
-            case SUB:
-            case MUL:
-            case DIV:
-                // Rekurencyjnie liczymy długość lewego i prawego dziecka
-                int leftLen = traverse(buffer, index + 1);
-                int rightLen = traverse(buffer, index + 1 + leftLen);
-                return 1 + leftLen + rightLen; // 1 = aktualny węzeł
-            case EXP:
-                return 1 + traverse(buffer, index + 1);
-
-        }
-
-        return 1; // na wszelki wypadek
+        return switch (buffer.get(buffercount)) {
+            case ADD, SUB, MUL, DIV -> traverse(buffer, traverse(buffer, ++buffercount));
+            case EXP -> traverse(buffer, ++buffercount);
+            default -> 0;
+        };
     }
 
     void setup_fitness(String fname) {
@@ -98,25 +83,19 @@ public class TinyGP {
             if (!fileScanner.hasNextLine()) {
                 throw new Exception("Data file is empty.");
             }
-
-            // Use Scanner to tokenize the first line (header/parameters)
+            
             varnumber = fileScanner.nextInt();
             randomnumber = fileScanner.nextInt();
             minrandom = fileScanner.nextDouble();
             maxrandom = fileScanner.nextDouble();
             fitnesscases = fileScanner.nextInt();
 
-            // Consume the rest of the header line if it wasn't fully tokenized
             if (fileScanner.hasNextLine()) {
                 fileScanner.nextLine();
             }
 
             targets = new ArrayList<>();
             final int columns = varnumber + 1;
-
-            for (int i = 0; i < fitnesscases; i++) {
-                targets.add(new ArrayList<>(Collections.nCopies(columns, 0.0)));
-            }
 
             if (varnumber + randomnumber >= FSET_START) {
                 System.out.println("too many variables and constants");
@@ -136,8 +115,9 @@ public class TinyGP {
                     throw new Exception("Data format error on line " + (i + 1) + ": too few values.");
                 }
 
+                targets.add(new ArrayList<>());
                 for (int j = 0; j < columns; j++) {
-                    targets.get(i).set(j, Double.parseDouble(tokens[j]));
+                    targets.get(i).add(Double.parseDouble(tokens[j]));
                 }
             }
         }
@@ -153,10 +133,9 @@ public class TinyGP {
     }
 
     double fitness_function( List<Character> Prog ) {
-        int i = 0, len;
+        int i;
         double result, fit = 0.0;
 
-        len = traverse( Prog, 0 );
         for (i = 0; i < fitnesscases; i ++ ) {
             for (int j = 0; j < varnumber; j ++ )
                 x.set(j, targets.get(i).get(j));
@@ -213,7 +192,7 @@ public class TinyGP {
     }
 
     int print_indiv( List<Character> buffer, int buffercounter ) {
-        int a1=0, a2;
+        int a1, a2;
         if ( buffer.get(buffercounter) < FSET_START ) {
             if ( buffer.get(buffercounter) < varnumber )
                 System.out.print( "X"+ (buffer.get(buffercounter) + 1 )+ " ");
@@ -256,36 +235,27 @@ public class TinyGP {
     }
 
 
-    static List<Character> buffer = new ArrayList<>(MAX_LEN);
+    List<Character> buffer = new ArrayList<>(MAX_LEN);
 
     List<Character> create_random_indiv( int depth ) {
         List<Character> ind;
         int len;
 
-//        buffer.clear();
-//        buffer.addAll(Collections.nCopies(MAX_LEN, ' '));
-
-        len = grow( buffer, 0, MAX_LEN, depth );
-
-        while (len < 0 )
-            len = grow( buffer, 0, MAX_LEN, depth );
+        do len = grow(buffer, 0, MAX_LEN, depth);
+        while (len < 0);
 
         ind = new ArrayList<>(buffer.subList(0, len));
 
         return ind;
     }
 
-    List<List<Character>> create_random_pop(int n, int depth, List<Double> fitness ) {
+    List<List<Character>> create_random_pop(int n, int depth) {
         List<List<Character>> pop = new ArrayList<>();
-        int i;
 
-        for(int j = 0; j < n; j++){
-            pop.add(new ArrayList<>());
-        }
 
-        for ( i = 0; i < n; i ++ ) {
-            pop.set(i, create_random_indiv( depth ));
-            fitness.set(i, fitness_function( pop.get(i) ));
+        for (int i = 0; i < n; i ++ ) {
+            pop.add(i, create_random_indiv( depth ));
+            fitness.add(i, fitness_function( pop.get(i) ));
         }
         return pop;
     }
@@ -346,19 +316,18 @@ public class TinyGP {
     List<Character> crossover( List<Character> parent1, List<Character> parent2 ) {
         int xo1start, xo1end, xo2start, xo2end;
         List<Character> offspring;
+
         int len1 = traverse( parent1, 0 );
         int len2 = traverse( parent2, 0 );
-        int lenoff;
 
-        xo1start =  rd.nextInt(len1);
-        int xo1subtree = traverse(parent1, xo1start);
-        xo1end = Math.min(xo1start + xo1subtree, parent1.size());
+        xo1start = rd.nextInt(len1);
+        int xo1end_raw = traverse(parent1, xo1start);
+        xo1end = Math.min(xo1end_raw, parent1.size());
 
-        xo2start =  rd.nextInt(len2);
-        int xo2subtree = traverse(parent2, xo2start);
-        xo2end = Math.min(xo2start + xo2subtree, parent2.size());
+        xo2start = rd.nextInt(len2);
+        int xo2end_raw = traverse(parent2, xo2start);
+        xo2end = Math.min(xo2end_raw, parent2.size());
 
-        lenoff = xo1start + (xo2end - xo2start) + (len1-xo1end);
 
         offspring = new ArrayList<>();
 
@@ -370,61 +339,51 @@ public class TinyGP {
     }
 
     List<Character> mutation( List<Character> parent, double pmut ) {
-        int len = traverse( parent, 0 ), i;
         List<Character> parentcopy = new ArrayList<>(parent);
 
-        for (i = 0; i < len; i ++ ) {
+        int i = 0;
+        while (i < parentcopy.size()) {
             if ( rd.nextDouble() < pmut ) {
                 int mutsite = i;
                 char old_node = parentcopy.get(mutsite);
 
                 if ( old_node < FSET_START ) {
-                    // --- Terminal Mutation (Safe, Arity=0 to Arity=0) ---
                     parentcopy.set(mutsite, (char) rd.nextInt(varnumber + randomnumber));
+                    i++;
                 } else {
-                    // --- Operator Mutation: Subtree Replacement ---
+                    int old_subtree_end = traverse(parentcopy, mutsite);
 
-                    // 1. Determine the size of the old subtree
-                    int old_subtree_len = traverse(parentcopy, mutsite);
-
-                    // 2. Generate the new subtree (Use a temporary buffer/list for the new tree)
                     List<Character> new_subtree_temp = new ArrayList<>(Collections.nCopies(MAX_LEN, ' '));
-
-                    // Call 'grow' to generate a random subtree starting at depth 1 or 2
-                    // We start at buffer index 0, as this is a temporary, isolated buffer
-                    int new_len = grow(new_subtree_temp, 0, MAX_LEN, 2); // DEPTH = 2 for variety
+                    int new_len = grow(new_subtree_temp, 0, MAX_LEN, 2);
 
                     if (new_len < 0) {
-                        // Skip if generation failed (e.g., ran out of MAX_LEN, though unlikely here)
+                        i++;
                         continue;
                     }
 
-                    // 3. Splice the new subtree into the parentcopy
+                    List<Character> new_subtree = new_subtree_temp.subList(0, new_len);
 
-                    // a. Get the 'Head' (part before the mutation site)
                     List<Character> head = parentcopy.subList(0, mutsite);
 
-                    // b. Get the 'Tail' (part after the old subtree)
-                    // The tail starts at mutsite + old_subtree_len
                     List<Character> tail = parentcopy.subList(
-                            mutsite + old_subtree_len,
+                            old_subtree_end,
                             parentcopy.size()
                     );
 
-                    // c. Build the new individual
                     List<Character> new_individual = new ArrayList<>();
                     new_individual.addAll(head);
-                    new_individual.addAll(new_subtree_temp.subList(0, new_len)); // The new tree
+                    new_individual.addAll(new_subtree);
                     new_individual.addAll(tail);
 
-                    // Replace parentcopy with the new, spliced individual
+
                     parentcopy = new_individual;
 
-                    // Update the overall length for subsequent mutation checks (important!)
-                    // The size of parentcopy IS the new length, but using traverse is safer.
-                    len = parentcopy.size();
+                    i = mutsite + new_len;
+
+                    continue;
                 }
             }
+            i++;
         }
         return parentcopy;
     }
@@ -447,25 +406,19 @@ public class TinyGP {
         seed = s;
         buffer.addAll(Collections.nCopies(MAX_LEN, ' '));
 
-        for (int i = 0; i < POPSIZE; i++){
-            fitness.add(0.0);
-        }
-
         if ( seed >= 0 )
             rd.setSeed(seed);
 
         setup_fitness(fname);
 
-        x.addAll(Collections.nCopies(FSET_START, 0.0));
-
         for ( int i = 0; i < FSET_START; i ++ )
-            x.set(i, (maxrandom-minrandom)*rd.nextDouble()+minrandom);
+            x.add((maxrandom-minrandom)*rd.nextDouble()+minrandom);
 
-        pop = create_random_pop(POPSIZE, DEPTH, fitness );
+        pop = create_random_pop(POPSIZE, DEPTH);
     }
 
     void evolve() {
-        int gen = 0, indivs, offspring, parent1, parent2, parent;
+        int gen, indivs, offspring, parent1, parent2, parent;
         double newfit;
         List<Character> newind;
         print_parms();
@@ -501,7 +454,7 @@ public class TinyGP {
         long s = -1;
 
         if ( args.length == 2 ) {
-            s = Integer.valueOf(args[0]).intValue();
+            s = Integer.parseInt(args[0]);
             fname = args[1];
         }
         if ( args.length == 1 ) {
@@ -511,4 +464,4 @@ public class TinyGP {
         TinyGP gp = new TinyGP(fname, s);
         gp.evolve();
     }
-};
+}
