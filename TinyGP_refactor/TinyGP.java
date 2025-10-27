@@ -20,8 +20,11 @@ public class TinyGP {
             SUB = 111,
             MUL = 112,
             DIV = 113,
+            SIN = 114,
+            COS = 115,
+            EXP = 116,
             FSET_START = ADD,
-            FSET_END = DIV;
+            FSET_END = EXP;
 
     List<Double> x = new ArrayList<>();
 
@@ -60,6 +63,9 @@ public class TinyGP {
                     return num / den;
                 }
             }
+            case EXP: return Math.exp(run());
+            case SIN: return Math.sin(run());
+            case COS: return Math.cos(run());
         }
         return 0.0; // should never get here
     }
@@ -70,6 +76,7 @@ public class TinyGP {
 
         return switch (buffer.get(buffercount)) {
             case ADD, SUB, MUL, DIV -> traverse(buffer, traverse(buffer, ++buffercount));
+            case SIN, COS, EXP -> traverse(buffer, ++buffercount);
             default -> 0;
         };
     }
@@ -176,6 +183,15 @@ public class TinyGP {
                     if ( one_child < 0 )
                         return -1;
                     return grow( buffer, one_child, max,depth-1 );
+
+                case SIN:
+                case COS:
+                case EXP:
+                    buffer.set(pos, prim);
+                    one_child = grow( buffer, pos+1, max,depth-1);
+                    if ( one_child < 0 )
+                        return -1;
+                    return one_child;
             }
         }
         return 0; // should never get here
@@ -215,6 +231,18 @@ public class TinyGP {
                 a2=print_indiv( buffer, a1 );
                 System.out.print( ")");
                 return a2;
+            case SIN: System.out.print( "SIN( ");
+                a1=print_indiv( buffer, ++buffercounter );
+                System.out.print( ")");
+                return a1;
+            case COS: System.out.print( "COS( ");
+                a1=print_indiv( buffer, ++buffercounter );
+                System.out.print( ")");
+                return a1;    
+            case EXP: System.out.print( "EXP( ");
+                a1=print_indiv( buffer, ++buffercounter );
+                System.out.print( ")");
+                return a1;
         }
 
         return 0;

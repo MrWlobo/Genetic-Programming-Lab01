@@ -4,6 +4,8 @@ import sys
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from numpy import cos, sin, exp
+
 
 def main():
     """Creates a plot from TinyGP output format.
@@ -38,6 +40,9 @@ def main():
                 X = []
                 for j in range(1, n_vars + 1):
                     equation = equation.replace(f"X{j}", f"X[{j-1}]")
+                    equation = equation.replace("COS", "cos")
+                    equation = equation.replace("SIN", "sin")
+                    equation = equation.replace("EXP", "exp")
 
                     X.append(np.arange(a, b, step))
             elif i == 2:
@@ -47,6 +52,9 @@ def main():
                 original_equation = line.strip()
                 for j in range(1, n_vars + 1):
                     original_equation = original_equation.replace(f"X{j}", f"X[{j-1}]")
+                    original_equation = original_equation.replace("COS", "cos")
+                    original_equation = original_equation.replace("SIN", "sin")
+                    original_equation = original_equation.replace("EXP", "exp")
             else:
                 break
                     
