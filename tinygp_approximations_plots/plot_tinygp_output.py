@@ -180,7 +180,7 @@ class Variable:
             return Variable(self.value - other)
     
     def __rsub__(self, other):
-        return Variable(self.value - other)
+        return Variable(other - self.value)
     
     def __mul__(self, other):
         if isinstance(other, Variable):
