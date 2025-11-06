@@ -9,6 +9,11 @@ import java.util.*;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.regex.*;
+
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.expression.F;
 
 public class TinyGP {
     List<Double> fitness;
@@ -87,7 +92,7 @@ public class TinyGP {
             if (!fileScanner.hasNextLine()) {
                 throw new Exception("Data file is empty.");
             }
-            
+
             varnumber = fileScanner.nextInt();
             randomnumber = fileScanner.nextInt();
             minrandom = fileScanner.nextDouble();
@@ -238,7 +243,7 @@ public class TinyGP {
             case COS: System.out.print( "COS( ");
                 a1=print_indiv( buffer, ++buffercounter );
                 System.out.print( ")");
-                return a1;    
+                return a1;
             case EXP: System.out.print( "EXP( ");
                 a1=print_indiv( buffer, ++buffercounter );
                 System.out.print( ")");
@@ -246,6 +251,51 @@ public class TinyGP {
         }
 
         return 0;
+    }
+
+    String buildString(List<Character> buffer, int[] idx) {
+        char op = buffer.get(idx[0]);
+
+        if (op < FSET_START) {
+            idx[0]++;
+            if (op == 0) return "x";
+            if (op == 1) return "y";
+            return Double.toString(x.get(op)); // stałe
+        }
+
+        switch (op) {
+            case ADD: {
+                idx[0]++;
+                return "(" + buildString(buffer, idx) + "+" + buildString(buffer, idx) + ")";
+            }
+            case SUB: {
+                idx[0]++;
+                return "(" + buildString(buffer, idx) + "-" + buildString(buffer, idx) + ")";
+            }
+            case MUL: {
+                idx[0]++;
+                return "(" + buildString(buffer, idx) + "*" + buildString(buffer, idx) + ")";
+            }
+            case DIV: {
+                idx[0]++;
+                return "(" + buildString(buffer, idx) + "/" + buildString(buffer, idx) + ")";
+            }
+            case SIN: {
+                idx[0]++;
+                return "sin(" + buildString(buffer, idx) + ")";
+            }
+            case COS: {
+                idx[0]++;
+                return "cos(" + buildString(buffer, idx) + ")";
+            }
+            case EXP: {
+                idx[0]++;
+                return "exp(" + buildString(buffer, idx) + ")";
+            }
+        }
+
+        idx[0]++;
+        return "?";
     }
 
 
@@ -294,8 +344,15 @@ public class TinyGP {
         System.out.print("Generation="+gen+" Avg Fitness="+(-favgpop)+
                 " Best Fitness="+(-fbestpop)+" Avg Size="+avg_len+
                 "\nBest Individual: ");
-        print_indiv( pop.get(best), 0 );
-        System.out.print( "\n");
+        //print_indiv( pop.get(best), 0 );
+        int[] idx = {0};
+        String expr = buildString(pop.get(best), idx);
+        expr = expr.replaceAll("--", "+").replaceAll("\\+\\-", "-");
+
+        ExprEvaluator util = new ExprEvaluator();
+        IExpr simplified = util.evaluate("Simplify(" + expr + ")");
+        System.out.println(simplified);
+
         System.out.flush();
     }
 
@@ -464,7 +521,7 @@ public class TinyGP {
     }
 
     public static void main(String[] args) {
-        String fname = "src/problem.dat";
+        String fname = "TinyGP_refactor/problem.dat";
         long s = -1;
 
         if ( args.length == 2 ) {
