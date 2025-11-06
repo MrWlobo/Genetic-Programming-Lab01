@@ -260,7 +260,7 @@ public class TinyGP {
             idx[0]++;
             if (op == 0) return "x";
             if (op == 1) return "y";
-            return Double.toString(x.get(op)); // stałe
+            return Double.toString(x.get(op));
         }
 
         switch (op) {
