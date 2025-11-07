@@ -80,15 +80,14 @@ def main():
                 Y = eval(equation)
                 Y_original = eval(original_equation)
 
-                fig, ax = plt.subplots(1, 2)
-                ax[0].plot(X[0], Y)
-                ax[0].set_title("TinyGP")
-                ax[0].grid()
-                ax[1].plot(X[0], Y_original)
-                ax[1].set_title("Original")
-                ax[1].grid()
+                plt.figure()
+                plt.plot(X[0], Y, label='TinyGP Output')
+                plt.plot(X[0], Y_original, label='Original')
+                plt.ylabel('y')
+                plt.xlabel('x')
+                plt.legend()
                 plt.savefig(f"{filename.replace(".txt", "").replace("examples", "plots")}.png")
-                plt.show()
+                # plt.show()
         elif n_vars == 2:
             if original_equation is None:
                 X[0], X[1] = np.meshgrid(X[0], X[1])
