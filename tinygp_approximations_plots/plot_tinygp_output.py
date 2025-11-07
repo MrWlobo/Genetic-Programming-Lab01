@@ -109,13 +109,21 @@ def main():
                     )
                 )
 
-                pio.write_html(
-                    fig,
-                    file=f"{filename.replace(".txt", "").replace("examples", "plots")}.html",
-                    auto_open=False, # Set to True to open the file in your default browser immediately
-                    include_plotlyjs='cdn' # Use 'cdn' for a smaller file size (requires internet to load the JS)
-                                        # or use 'full' (default) for a completely offline, standalone file.
-)
+                # pio.write_html(
+                #     fig,
+                #     file=f"{filename.replace(".txt", "").replace("examples", "plots")}.html",
+                #     auto_open=False, # Set to True to open the file in your default browser immediately
+                #     include_plotlyjs='cdn' # Use 'cdn' for a smaller file size (requires internet to load the JS)
+                #                         # or use 'full' (default) for a completely offline, standalone file.
+                # )
+                
+                try:
+                    fig.write_image(f"{filename.replace(".txt", "").replace("examples", "plots")}.png")
+                    print(f"Figure saved successfully as {filename.replace(".txt", "").replace("examples", "plots")}.png")
+                except Exception as e:
+                    print(f"Error saving image: {e}")
+                    print("Please make sure you have installed 'kaleido'.")
+
             else:
                 X[0], X[1] = np.meshgrid(X[0], X[1])
 
@@ -143,13 +151,20 @@ def main():
                     height=550, 
                 )
 
-                pio.write_html(
-                    fig,
-                    file=f"{filename.replace(".txt", "").replace("examples", "plots")}.html",
-                    auto_open=False, # Set to True to open the file in your default browser immediately
-                    include_plotlyjs='cdn' # Use 'cdn' for a smaller file size (requires internet to load the JS)
-                                        # or use 'full' (default) for a completely offline, standalone file.
-                )
+                # pio.write_html(
+                #     fig,
+                #     file=f"{filename.replace(".txt", "").replace("examples", "plots")}.html",
+                #     auto_open=False, # Set to True to open the file in your default browser immediately
+                #     include_plotlyjs='cdn' # Use 'cdn' for a smaller file size (requires internet to load the JS)
+                #                         # or use 'full' (default) for a completely offline, standalone file.
+                # )
+                
+                try:
+                    fig.write_image(f"{filename.replace(".txt", "").replace("examples", "plots")}.png")
+                    print(f"Figure saved successfully as {filename.replace(".txt", "").replace("examples", "plots")}.png")
+                except Exception as e:
+                    print(f"Error saving image: {e}")
+                    print("Please make sure you have installed 'kaleido'.")
 
 
 class Variable:
